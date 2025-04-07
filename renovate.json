@@ -1,23 +1,44 @@
-name: Java CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK
-      # renovate: datasource=github-releases depName=actions/setup-java
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard"
+  ],
+  "labels": ["dependencies"],
+  "schedule": ["every weekend"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["org.springframework.*"],
+      "groupName": "spring dependencies",
+      "schedule": ["on the first day of the month"]
+    },
+    {
+      "matchPackagePatterns": ["junit:junit"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "maven": {
+    "fileMatch": [
+      "pom.xml",
+      "build.gradle",
+      "build.gradle.kts",
+      "settings.gradle",
+      "settings.gradle.kts"
+    ]
+  },
+  "ignoreDeps": [
+    "com.sun.activation:javax.activation"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
